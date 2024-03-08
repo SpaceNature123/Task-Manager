@@ -1,0 +1,42 @@
+class Tasks
+{
+protected:
+string input_s,arr,priority1="Critical",priority2="High",priority3="Medium",priority4="Low";
+char input_c;
+int input_i;
+vector <string> tasks,notes,ctasks;
+vector <int> priority,due_date,cpriority,cdue_date;
+const string filename = "tasks.txt";  // File to store tasks
+public:
+Tasks()
+{
+  input_s="";
+  input_c=' ';
+  input_i=0;
+  arr="default";
+  for(int i=0;i<=2;i++)
+  {
+      cout<<colour;
+      cout<<"Initializing Program";
+      //cout.flush();
+      this_thread::sleep_for(std::chrono::milliseconds(1000));
+      cout << "\033[K\r";
+      cout.flush();
+      cout<<"Initializing Program.";
+      //cout.flush();
+      this_thread::sleep_for(std::chrono::milliseconds(1000));
+      cout << "\033[K\r";
+      cout.flush();
+      cout<<"Initializing Program..";
+      //cout.flush();
+      this_thread::sleep_for(std::chrono::milliseconds(1000));
+      cout << "\033[K\r";
+      cout.flush();
+      cout<<"Initializing Program...";
+      //cout.flush();
+      this_thread::sleep_for(std::chrono::milliseconds(1000));
+      cout << "\033[K\r";
+      cout.flush();
+  }
+}
+};
