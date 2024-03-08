@@ -1,0 +1,29 @@
+#include <iostream>
+using namespace std;
+void get(string& x)
+{
+  cout<<colour2;
+  getline(cin,x);
+  cout<<colour;
+}
+void get(int& x)
+{
+  cout<<colour2;
+  while (!(cin>>x))
+    {//Error handling 
+      clear();
+      cout<<colour;
+      cout<<"Invalid Input, Try again\n";
+      cin.clear();
+cin.ignore(numeric_limits<streamsize>::max(), '\n');
+cout<<colour;
+    }
+  // Discard invalid input
+}
+void get(char& x)
+{
+  cout<<colour2;
+  cin>>x;
+  x = tolower(x);
+  cout<<colour;
+}
