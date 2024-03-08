@@ -1,0 +1,76 @@
+#include <iostream>
+using namespace std;
+void display()
+    {
+        clear();
+        cout << "Want a tutorial?(Yes/No)\n";
+        get(input_s);
+        for (int i = 0; i < input_s.length(); i++)
+        {
+            input_s[i] = tolower(input_s[i]);
+        }
+        input_s[0] = toupper(input_s[0]);
+        if (input_s == "Yes")
+        {
+            clear();
+            cout << "This is a task manager\nPress any key to continue";
+            get(input_s);
+            clear();
+            cout << "You can manage tasks here\n";
+            get(input_s);
+            clear();
+            cout << "Add a task → To add a task\n";
+            get(input_s);
+            clear();
+            cout << "Delete a task → To delete a task\n";
+            get(input_s);
+            clear();
+            cout << "View tasks → To view tasks\n";
+            get(input_s);
+            clear();
+            cout << "There are three modes of viewing\n";
+            get(input_s);
+            clear();
+            cout << "a) Standard\n";
+            cout << "This mode shows tasks in the order of submittion\n";
+            get(input_s);
+            clear();
+            cout << "b) Priortiy\n";
+            cout << "This contains four different priorities\n";
+            cout << "Priority 1 -> Critical\n";
+            cout << "Priority 2 -> High\n";
+            cout << "Priority 3 -> Medium\n";
+            cout << "Priority 4 -> Low\n";
+            get(input_s);
+            clear();
+            cout << "Edit → To edit tasks\n";
+            get(input_s);
+            clear();
+            cout << "The edit will contain three options\n";
+            get(input_s);
+            clear();
+            cout << "Customize → This option is used to change the view of the tasks\n";
+            get(input_s);
+            clear();
+            cout << "Clear → Clear all tasks\n";
+            get(input_s);
+            clear();
+            cout << "Change colour -> Changes colour of the program\n";
+            get(input_s);
+            clear();
+            cout << "Customize priority -> Custmoize the priority names according to your need\n";
+            get(input_s);
+            clear();
+            cout << "Edit tasks -> To edit a task\n";
+            get(input_s);
+            clear();
+            cout << "Every mutilevel option contains a '⌄' means there are sub options";
+            get(input_s);
+            clear();
+            cout << "Back -> Used for mutilevel options to quit the particular tab\n";
+            get(input_s);
+            clear();
+            cout << "Pomorodo timer → Starts a pomorodo timer\n";
+            get(input_s);
+            clear();
+        }
