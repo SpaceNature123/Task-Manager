@@ -1,0 +1,7 @@
+#include <iostream>
+using namespace std;
+void clear()
+{
+    cout << "\033[2J\033[1;1H";//ANSI code for clearing screen
+    cout << "\t\t\t\t   TASK MANAGER\n\n\n";
+}
