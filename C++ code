@@ -1,0 +1,919 @@
+#include<iostream>
+#include<vector>
+#include<limits>
+#include<algorithm>
+#include<fstream>
+#include<string>
+#include<chrono>
+#include<thread>
+#include<atomic>
+#include<cstdlib>
+using namespace std;
+// ANSI escape codes for colors
+#define RESET   "\033[0m"
+#define RED     "\033[1;31m"
+#define DRED "\033[0;31m"
+#define ORANGE  "\033[1;33m"
+#define DORANGE "\033[0;33m"
+#define BLUE    "\033[1;34m"
+#define DBLUE "\033[0;34m"
+#define GREEN   "\033[1;32m"
+#define DGREEN "\033[0;32m"
+string colour = RESET, colour2 = RESET;
+void clear()
+{
+  cout << "\033[2J\033[1;1H";
+  cout<<"\t\t\t\t   TASK MANAGER\n\n\n";
+}
+string check(const string& x)
+{
+    string firstPart,remainingPart;
+      if (x.length() > 25) 
+      {
+        firstPart = x.substr(0, 25);
+        remainingPart = x.substr(25,50);
+       return firstPart + "\n"+remainingPart;
+      }
+      else
+      return x;
+}
+atomic<bool> exitFlag(false);
+
+void userInputThread() {
+    char userInput;
+    while (true) {
+        cin >> userInput;
+        if (userInput == 'q') {
+            exitFlag = true;
+            break;
+        }
+    }
+}
+class Tasks
+{
+protected:
+string input_s,arr,priority1="Critical",priority2="High",priority3="Medium",priority4="Low";
+char input_c;
+int input_i;
+vector <string> tasks,notes,ctasks;
+vector <int> priority,due_date,cpriority,cdue_date;
+const string filename = "tasks.txt";  // File to store tasks
+public:
+Tasks()
+{
+  input_s="";
+  input_c=' ';
+  input_i=0;
+  arr="default";
+  for(int i=0;i<=2;i++)
+  {
+      cout<<colour;
+      cout<<"Initializing Program";
+      //cout.flush();
+      this_thread::sleep_for(std::chrono::milliseconds(1000));
+      cout << "\033[K\r";
+      cout.flush();
+      cout<<"Initializing Program.";
+      //cout.flush();
+      this_thread::sleep_for(std::chrono::milliseconds(1000));
+      cout << "\033[K\r";
+      cout.flush();
+      cout<<"Initializing Program..";
+      //cout.flush();
+      this_thread::sleep_for(std::chrono::milliseconds(1000));
+      cout << "\033[K\r";
+      cout.flush();
+      cout<<"Initializing Program...";
+      //cout.flush();
+      this_thread::sleep_for(std::chrono::milliseconds(1000));
+      cout << "\033[K\r";
+      cout.flush();
+  }
+  loadTasks();
+}
+ // Load tasks from file
+    void loadTasks() {
+        ifstream file(filename);
+        if (file.is_open()) {
+            // Clear previous data
+            tasks.clear();
+            priority.clear();
+            due_date.clear();
+            notes.clear();
+            // Load tasks from file
+            while (file >> input_s >> input_i >> input_i) {
+                getline(file >> ws, input_s);  // Read the rest of the line as a note
+                tasks.push_back(input_s);
+                priority.push_back(input_i);
+                due_date.push_back(input_i);
+            }
+            file.close();
+        }
+        notes.push_back(input_s);
+    }
+
+    // Save tasks to file
+    void saveTasks() {
+        ofstream file(filename);
+        if (file.is_open()) {
+            // Save incomplete tasks
+            for (size_t i = 0; i < tasks.size(); i++) {
+                file << tasks[i] << ' ' << priority[i] << ' ' << due_date[i] << ' ' << notes[i] << endl;
+            }
+            // Save completed tasks
+            for (size_t i = 0; i < ctasks.size(); i++) {
+                file << ctasks[i] << ' ' << cpriority[i] << ' ' << cdue_date[i] << ' ' << notes[i] << endl;
+            }
+            file.close();
+        }
+    }
+void get(string& x)
+{
+  cout<<colour2;
+  getline(cin,x);
+  cout<<colour;
+}
+void get(int& x)
+{
+  cout<<colour2;
+  while (!(cin>>x))
+    {
+      clear();
+      cout<<colour;
+      cout<<"Invalid Input, Try again\n";
+      cin.clear();
+cin.ignore(numeric_limits<streamsize>::max(), '\n');
+cout<<colour;
+    }
+  // Discard invalid input
+}
+void get(char& x)
+{
+  cout<<colour2;
+  cin>>x;
+  x = tolower(x);
+  cout<<colour;
+}
+void editTask() {
+    // Display tasks with their indices
+    for (size_t i = 0; i < tasks.size(); ++i) {
+        cout << i << ": " << tasks[i] << " Priority: " << priority[i] << " Due Date: " << due_date[i] << endl;
+    }
+
+    // Get the index of the task to edit
+    cout << "Enter the index of the task to edit: ";
+    size_t index;
+    cin >> index;
+
+    // Check if the index is within valid range
+    if (index >= 0 && index < tasks.size()) {
+        // Allow the user to edit specific aspects of the task
+        cout << "Edit task name: ";
+        cin.ignore();  // Ignore newline character from previous input
+        getline(cin, tasks[index]);
+
+        cout << "Edit priority: ";
+        cin >> priority[index];
+
+        cout << "Edit due date: ";
+        cin >> due_date[index];
+
+        // Save the modified tasks to file or wherever you are storing them
+        saveTasks();
+
+        cout << "Task edited successfully!\n";
+    } else {
+        cout << "Invalid index.\n";
+    }
+}
+void deleteTask() 
+{
+    // Display tasks with their indices
+    for (size_t i = 0; i < tasks.size(); ++i)
+    {
+        cout << i+1 << ": " << tasks[i] << " Priority: " << priority[i] << " Due Date: " << due_date[i] << endl;
+    }
+
+    // Get the index of the task to delete
+    cout << "Enter the index of the task to delete: ";
+    size_t index;
+    cin >> index;
+    index-=1;
+    // Check if the index is within valid range
+    if (index >= 0 && index < tasks.size()) 
+    {
+        cout<<"Are you sure?(Yes/No)\n";
+        cin.ignore();
+        get(input_s);
+        for(int i=0;i<input_s.length();i++)
+        {
+            input_s[i] = tolower(input_s[i]);
+        }
+        input_s[0] = toupper(input_s[0]);
+        // Erase the task and related information
+        if(input_s == "Yes")
+        {
+        clear();
+        tasks.erase(tasks.begin() + index);
+        priority.erase(priority.begin() + index);
+        due_date.erase(due_date.begin() + index);
+        cout << "Task deleted successfully!\n";
+        // Save the modified tasks to file or wherever you are storing them
+        saveTasks();
+        }
+    } 
+    else 
+    {
+        cout << "Invalid index.\n";
+    }
+}
+void completeTask()
+{
+    for(int i=0;i<tasks.size();i++)
+    cout << i+1 << ": " << tasks[i] << " Priority: " << priority[i] << " Due Date: " << due_date[i] << endl;
+  
+
+    // Get the index of the task to delete
+    cout << "Enter the index of the task to mark as complete: ";
+    size_t index;
+    cin>>index;
+    index-=1;
+    clear();
+    if (index >= 0 && index < tasks.size())
+    {
+    ctasks.push_back(tasks[index]);
+    cpriority.push_back(priority[index]);
+    cdue_date.push_back(due_date[index]);
+    tasks.erase(tasks.begin() + index);
+    priority.erase(priority.begin() + index);
+    due_date.erase(due_date.begin() + index);
+    cout<<"Congragulations, task is completed successfully\n";
+    }
+    else
+    cout<<"Invalid index\n";
+}
+    void uncompleteTask()
+{
+    for(int i=0;i<tasks.size();i++)
+    cout << i+1 << ": " << tasks[i] << " Priority: " << priority[i] << " Due Date: " << due_date[i] << endl;
+
+    // Get the index of the task to delete
+    cout << "Enter the index of the task to mark as incomplete: ";
+    size_t index;
+    cin >> index;
+    index-=1;
+    clear();
+    if (index >= 0 && index < tasks.size())
+    {
+    tasks.push_back(tasks[index]);
+    priority.push_back(priority[index]);
+    due_date.push_back(due_date[index]);
+    ctasks.erase(tasks.begin() + index);
+    cpriority.erase(priority.begin() + index);
+    cdue_date.erase(due_date.begin() + index);
+    cout<<"Congragulations, task is marked as incomplete\n";
+    }
+    else
+    cout<<"Invalid index\n";
+}
+string strike(const std::string& input) {
+    std::string output;
+    for (char c : input) {
+        output += c;
+        output += "\u0336"; // Unicode combining strike-through character
+    }
+    return output;
+    saveTasks();
+}
+void display()
+{
+  clear();
+  cout<<"Want a tutorial?(Yes/No)\n";
+  get(input_s);
+  for(int i=0;i<input_s.length();i++)
+              {
+                  input_s[i] = tolower(input_s[i]);
+              }
+  input_s[0] = toupper(input_s[0]);
+  if(input_s == "Yes")
+  {
+      clear();
+      cout<<"This is a task manager\nPress any key to continue";
+      get(input_s);
+      clear();
+      cout<<"You can manage tasks here\n";
+      get(input_s);
+      clear();
+      cout<<"Add a task → To add a task\n";
+      get(input_s);
+      clear();
+      cout<<"Delete a task → To delete a task\n";
+      get(input_s);
+      clear();
+      cout<<"View tasks → To view tasks\n";
+      get(input_s);
+      clear();
+      cout<<"There are three modes of viewing\n";
+      get(input_s);
+      clear();
+      cout<<"a) Standard\n";
+      cout<<"This mode shows tasks in the order of submittion\n";
+      get(input_s);
+      clear();
+      cout<<"b) Priortiy\n";
+      cout<<"This contains four different priorities\n";
+      cout<<"Priority 1 -> Critical\n";
+      cout<<"Priority 2 -> High\n";
+      cout<<"Priority 3 -> Medium\n";
+      cout<<"Priority 4 -> Low\n";
+      get(input_s);
+      clear();
+      cout<<"Edit → To edit tasks\n";
+      get(input_s);
+      clear();
+      cout<<"The edit will contain three options\n";
+      get(input_s);
+      clear();
+      cout<<"Customize → This option is used to change the view of the tasks\n";
+      get(input_s);
+      clear();
+      cout<<"Clear → Clear all tasks\n";
+      get(input_s);
+      clear();
+      cout<<"Change colour -> Changes colour of the program\n";
+      get(input_s);
+      clear();
+      cout<<"Customize priority -> Custmoize the priority names according to your need\n";
+      get(input_s);
+      clear();
+      cout<<"Edit tasks -> To edit a task\n";
+      get(input_s);
+      clear();
+      cout<<"Every mutilevel option contains a '⌄' means there are sub options";
+      get(input_s);
+      clear();
+      cout<<"Back -> Used for mutilevel options to quit the particular tab\n";
+      get(input_s);
+      clear();
+      cout<<"Pomorodo timer → Starts a pomorodo timer\n";
+      get(input_s);
+      clear();
+  }
+  clear();
+  cout<<"a) Add a task"<<endl;
+  cout<<"b) Delete a task"<<endl;
+  cout<<"c) View tasks"<<endl;
+  cout<<"d) Edit⌄"<<endl;
+  cout<<"e) Pomorodo"<<endl;
+  cout<<"f) Notes"<<endl;
+  cout<<"g) Quit"<<endl;
+  while(true)
+  {
+  get(input_c);
+  clear();
+  switch(input_c)
+    {
+      case 'a':
+      cin.ignore();
+      cout<<"Enter the task\n";
+      cout<<"Type...\r";
+      get(input_s);
+      tasks.push_back(input_s);
+      clear();
+      cout<<"Enter priority\n";
+      cout<<"Type...\r";
+      get(input_i);
+      while((input_i<1)||(input_i>4))
+        {
+          clear();
+          cout<<"Priority must be between 1 and 4\n";
+          get(input_i);
+        }
+      priority.push_back(input_i);
+      clear();
+      cout<<"Enter due date\n";
+      cout<<"Type...\r";
+      get(input_i);
+      due_date.push_back(input_i);
+      clear();
+      cout<<"Task added\n";
+      cout<<"Press 'h' for help\n";
+      saveTasks();
+      break;
+      case 'b':
+      deleteTask();
+      cout<<"Press 'h' for help\n";
+      break;
+      case 'c':
+      cout<<"Want to see\na) Completed tasks\nb) Incompleted tasks\n";
+      get(input_c);
+      clear();
+      switch(input_c)
+      {
+          case 'b':
+      cout<<"Tasks\n";
+      if(tasks.size()==0)
+      {
+        cout<<"No tasks\n";
+      }
+      else if(arr=="default")
+      {
+      cout<<"Default\n\n";
+      for(int i=0;i<tasks.size();i++)
+        {
+          cout<<"☐ "<<check(tasks[i])<<' '<<priority[i]<<' '<<due_date[i]<<endl;
+        }
+      }
+      else if(arr=="priority")
+      {
+        cout<<"Priority\n\n";
+            cout<<RED<<priority1<<colour<<endl;
+            for(int j=0;j<priority.size();j++)
+              {
+                  if(priority[j]==1)
+                  cout<<"☐ "<<check(tasks[j])<<' '<<due_date[j]<<endl;
+              }
+          cout<<ORANGE<<priority2<<colour<<endl;
+          for(int j=0;j<priority.size();j++)
+              {
+                  if(priority[j]==2)
+                  cout<<"☐ "<<check(tasks[j])<<' '<<due_date[j]<<endl;
+              }
+              cout<<BLUE<<priority3<<colour<<endl;
+              for(int j=0;j<priority.size();j++)
+              {
+                  if(priority[j]==3)
+                  cout<<"☐ "<<check(tasks[j])<<' '<<due_date[j]<<endl;
+              }
+              cout<<GREEN<<priority4<<colour<<endl;
+              for(int j=0;j<priority.size();j++)
+              {
+                  if(priority[j]==4)
+                  cout<<"☐ "<<check(tasks[j])<<' '<<due_date[j]<<endl;
+              }
+      }
+      else if(arr=="due_date")
+      {
+        cout<<"Due date\n\n";
+        for(int i=1;i<=31;i++)
+        {
+            for(int j=0;j<tasks.size();j++)
+            {
+                if(due_date[j] == i)
+                {
+                    cout<<RED<<"Tasks to be completed before "<<i<<colour<<endl;
+                    saveTasks();
+                    break;
+                }
+            }
+            for(int j=0;j<tasks.size();j++)
+            {
+                if(due_date[j]==i)
+                {
+                    cout<<"☐ "<<check(tasks[j])<<' '<<priority[j]<<endl;
+                }
+            }
+        }
+      }
+      cout<<"Press 'h' for help\n\n";
+      break;
+      case 'a':
+      for(int i=0;i<ctasks.size();i++)
+        {
+          cout<<"☑ "<<strike(check(ctasks[i]))<<' '<<cpriority[i]<<' '<<cdue_date[i]<<'\n';
+      }
+        cout<<"Press 'h' for help\n";
+      }
+      break;
+      case 'd':
+      cout<<"a) Customize⌄\n";
+      cout<<"b) Clear all tasks\n";
+      cout<<"c) Change colour\n";
+      cout<<"d) Customize priority\n";
+      cout<<"e) Edit tasks\n";
+      cout<<"f) Complete task\n";
+      cout<<"g) Mark as incomplete task\n";
+      cout<<"h) Back\n";
+      get(input_c);
+      input_c = tolower(input_c);
+      clear();
+      switch(input_c)
+        {
+          case 'a':
+          cout<<"a) Priority\n";
+          cout<<"b) Due date\n";
+          cout<<"c) Default\n";
+          cout<<"d) Back";
+          get(input_c);
+          input_c = tolower(input_c);
+          clear();
+          switch(input_c)
+            {
+              case 'a':
+              if(arr == "priority")
+              {
+                  cout<<"Already in Priority\n";
+                  cout<<"Press 'h' for help\n";
+                  break;
+              }
+              arr = "priority";
+              cout<<"Changed to Priority\n";
+              cout<<"Press 'h' for help\n";
+              break;
+              case 'b':
+              if(arr == "due_date")
+              {
+                  cout<<"Already in Due Dates\n";
+                  cout<<"Press 'h' for help\n";
+                  break;
+              }
+              arr = "due_date";
+              cout<<"Changed to Due date\n";
+              cout<<"Press 'h' for help\n";
+              break;
+              case 'c':
+              if(arr == "default")
+              {
+                  cout<<"Already in Default\n";
+                  cout<<"Press 'h' for help\n";
+                  break;
+              }
+              arr = "default";
+              cout<<"Changed to Default\n";
+              cout<<"Press 'h' for help\n";
+              break;
+              default:
+              cout<<"Press 'h' for help\n";
+              break;
+            }
+          break;
+          case 'b':
+          clear();
+          cout<<"Are you sure?(Yes/No)\n";
+          cin.ignore();
+          get(input_s);
+          for(int i=0;i<input_s.length();i++)
+              {
+                  input_s[i] = tolower(input_s[i]);
+              }
+          input_s[0] = toupper(input_s[0]);
+          if(input_s == "Yes")
+          {
+              tasks.clear();
+              due_date.clear();
+              priority.clear();
+              cout<<"Tasks cleared\n";
+          }
+          break;
+          case 'c':
+          clear();
+          cout<<DBLUE<<"a) Text\n";
+          cout<<BLUE<<"b) Text\n";
+          cout<<DRED<<"c) Text\n";
+          cout<<RED<<"d) Text\n";
+          cout<<DGREEN<<"e) Text\n";
+          cout<<GREEN<<"f) Text\n";
+          cout<<DORANGE<<"g) Text\n";
+          cout<<ORANGE<<"h) Text\n";
+          cout<<RESET<<"i) Text\n\n";
+          cout<<"Enter the output text colour\n";
+          input_c = tolower(input_c);
+          get(input_c);
+          switch(input_c)
+          {
+              case 'a':
+              if (colour == DBLUE)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = DBLUE;
+              break;
+              case 'b':
+              if (colour == BLUE)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = BLUE;
+              break;
+              case 'c':
+              if (colour == DRED)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = DRED;
+              break;
+              case 'd':
+              if (colour == RED)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = RED;
+              break;
+              case 'e':
+              if (colour == DGREEN)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = DGREEN;
+              break;
+              case 'f':
+              if (colour == GREEN)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = GREEN;
+              break;
+              case 'g':
+              if (colour == DORANGE)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = DORANGE;
+              break;
+              case 'h':
+              if (colour == DORANGE)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = ORANGE;
+              break;
+              default:
+              if (colour == RESET)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour = RESET;
+        }
+        cout<<"Enter the input colour\n";
+        get(input_c);
+        input_c = tolower(input_c);
+        clear();
+        switch(input_c)
+          {
+              case 'a':
+              if (colour2 == DBLUE)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = DBLUE;
+              break;
+              case 'b':
+              if (colour2 == BLUE)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = BLUE;
+              break;
+              case 'c':
+              if (colour2 == DRED)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = DRED;
+              break;
+              case 'd':
+              if (colour2 == RED)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = RED;
+              break;
+              case 'e':
+              if (colour2 == GREEN)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = DGREEN;
+              break;
+              case 'f':
+              if (colour2 == GREEN)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = GREEN;
+              break;
+              case 'g':
+              if (colour2 == DORANGE)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = DORANGE;
+              break;
+              case 'h':
+              if (colour2 == ORANGE)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = ORANGE;
+              break;
+              default:
+              if (colour2 == RESET)
+              {
+                  cout<<"Already in that colour\n";
+                  break;
+              }
+              colour2 = RESET;
+              break;
+        }
+        cout<<"Colour changed successfully\n";
+        cout<<"Press 'h' for help\n";
+        break;
+        case 'd':
+        cout<<"Priority 1 -> "<<priority1<<endl;
+        cout<<"Priority 2 -> "<<priority2<<endl;
+        cout<<"Priority 3 -> "<<priority3<<endl;
+        cout<<"Priority 4 -> "<<priority4<<endl<<endl;
+        cout<<"Change Priority names?(Yes/No)\n";
+        cin.ignore();
+        get(input_s);
+        for(int i=0;i<input_s.length();i++)
+              {
+                  input_s[i] = tolower(input_s[i]);
+              }
+         input_s[0] = toupper(input_s[0]);
+        if(input_s == "Yes")
+        {
+            cout<<"Priority 1 -> ";
+            get(priority1);
+            cout<<"Priority 2 -> ";
+            get(priority2);
+            cout<<"Priority 3 -> ";
+            get(priority3);
+            cout<<"Priority 4 -> ";
+            get(priority4);
+            cout<<"Changes successful\n";
+            cout<<"Press 'h' for help\n";
+        }
+        break;
+        case 'e':
+        editTask();
+        cout<<"Press 'h', for help\n";
+        break;
+        case 'f':
+        completeTask();
+        cout<<"Press 'h' for help\n";
+        break;
+        case 'g':
+        uncompleteTask();
+        cout<<"Press 'h' for help\n";
+        break;
+        default:
+        cout<<"Press 'h' for help\n";
+        break;
+        }
+      break;
+      case 'e':
+              int index,minutes,sessions,breaks;
+              clear();
+              for(int i=0;i<tasks.size();i++)
+        {
+          cout<<i<<check(tasks[i])<<' '<<priority[i]<<' '<<due_date[i]<<endl;
+        }
+          cout<<"\nChoose a task to continue\n";
+          get(input_i);
+          index = input_i;
+          clear();
+          cout<<"Choose length of each pomorodo\n";
+          cout<<"_    minutes\r";
+          while (!(cin >> input_i) || input_i <= 0) {
+    clear();
+    cout << "Invalid input. minutes must be greater than or equal to 0. Try again: ";
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+          minutes = input_i;
+          clear();
+          cout<<"Choose no.of sessions\n";
+          cout<<"_    sessions\r";
+          while (!(cin >> input_i) || input_i <= 0) {
+    clear();
+    cout << "Invalid input. Number of sessions must be greater than 0. Try again: ";
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+          sessions = input_i;
+          clear();
+          cout<<"Choose length of each break\n";
+          cout<<"_     minutes\r";
+          while (!(cin >> input_i) || input_i <= 0) {
+    clear();
+    cout << "Invalid input. Minutes must be greater than or equal to 0. Try again: ";
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+          breaks = input_i;
+          clear();
+          for(int i=1;i<=sessions;i++)
+          {
+              cout<<"Session "<<i<<" of " <<sessions<<endl;
+              cout<<"Task : \n";
+              cout<<"      "<<tasks[index]<<endl;
+              for(int j=minutes*60;j>=0;--j)
+              {
+                  if (exitFlag.load(std::memory_order_relaxed))
+                  {
+            cout << "Pomodoro cancelled\n";
+            cout << "Press 'h' for help";
+            exitFlag.store(false, std::memory_order_relaxed);
+            // Reset the flag
+            break;
+                  }
+                  cout<<j/60<<" : "<<j%60;
+                  cout.flush();
+                  this_thread::sleep_for(std::chrono::milliseconds(1000));
+                  cout << "\033[K\r";
+              }
+              if (exitFlag.load(std::memory_order_relaxed))
+            break;
+              clear();
+              cout<<"Break\n";
+              for(int k=breaks*60;k>=0;--k)
+              {
+                  if (exitFlag.load(std::memory_order_relaxed))
+                  {
+            cout << "Pomodoro cancelled\n";
+            cout << "Press 'h' for help";
+            exitFlag.store(false, std::memory_order_relaxed);
+            // Reset the flag
+            break;
+                  }
+                  cout<<k/60<<" : "<<k%60;
+                  cout.flush();
+                  this_thread::sleep_for(std::chrono::milliseconds(1000));
+                  cout << "\033[K\r";
+              }
+          }
+          cout<<"Pomorodo has been successfully completed\n";
+          cout<<"Press 'h' for help\n";
+              break;
+              case 'f':
+              cout<<"Enter something\n";
+              cout<<"Press q to exit\n";
+              cout<<"Enter clear to clear\n";
+              cout<<"Enter delete to delete a line\n";
+              cout<<"\n\t\t\t\t\tNOTES\n";
+              for(int i=0;i<notes.size();i++)
+              {
+              cout<<notes[i];
+              }
+              while(input_s != "q")
+              {
+              get(input_s);
+              notes.push_back(input_s);
+              if(input_s == "clear")
+              {
+                  clear();
+                  notes.clear();
+                  cout<<"Tasks Cleared\n";
+              }
+              }
+              saveTasks();
+              break;
+              case 'g':
+              cout<<"Are you sure want to quit?(Yes/No)\n";
+              cin.ignore();
+              get(input_s);
+              for(int i=0;i<input_s.length();i++)
+              {
+                  input_s[i] = tolower(input_s[i]);
+              }
+              input_s[0] = toupper(input_s[0]);
+              if(input_s == "Yes")
+              exit(0);
+              break;
+      default:
+      cout<<"a) Add a task"<<endl;
+      cout<<"b) Delete a task"<<endl;
+      cout<<"c) View tasks"<<endl;
+      cout<<"d) Edit⌄"<<endl;
+      cout<<"e) Pomorodo"<<endl;
+      cout<<"f) Notes"<<endl;
+      cout<<"g) Quit"<<endl;
+      break;
+    }
+  }
+}
+};
+int main()
+{
+  clear();
+  Tasks t;
+  t.display();
+}
